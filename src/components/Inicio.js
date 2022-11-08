@@ -19,7 +19,8 @@ export default class Inicio extends React.Component {
                     <div style={{maxWidth: '450px'}}>
                         <h1 className="display-5 fw-bold">CATÁLOGO</h1>
                         <p className="my-3">En la biblioteca de Estación Central tenemos una gran variedad de libros disponibles, los cuales puedes solicitar a domicilio o en sala.</p>
-                        <div className="justify-content-center align-items-center align-content-center align-self-center"><button className="btn btn-primary text-center shadow d-flex justify-content-center align-items-center" type="button">Ir</button></div>
+                        <div className="justify-content-center align-items-center align-content-center align-self-center">
+                            <Link to="/catalogo"><button className="btn btn-primary text-center shadow d-flex justify-content-center align-items-center" type="button">Ir</button></Link></div>
                     </div>
                 </div>
                 <div className="col-md-6 mb-4">
