@@ -3,33 +3,72 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import catalogo from '../mocking/catalogo';
 import Collapse from 'react-bootstrap/Collapse';
+import DatePicker from "react-datepicker";
+import { Snackbar } from '@mui/material';
+import MuiAlert from "@mui/material/Alert";
 
 class LibroTableRow extends React.Component {
     state = { expanded: false }
-  
+    today = new Date();
     constructor(props) {
         super(props);
     
         this.state = {
-          collapseMenu: true
+          collapseMenu: true,
+          open: false,
+          startDate: new Date(),
+          today: new Date(),
         };
     
         this.showHide = this.showHide.bind(this);
+        this.handleClick = this.handleClick.bind(this);
+        this.handleClose = this.handleClose.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.onFormSubmit = this.onFormSubmit.bind(this);
+    }
+    
+    showHide(e) {
+    e.preventDefault();
+    
+    this.setState({
+        collapseMenu: !this.state.collapseMenu
+    });
+
+    };
+
+    handleOpen = () => this.setState({ open: true });
+
+    handleClose = () => this.setState({ open: false });
+
+    handleClick = () => this.setState({ open: true });
+
+    handleChange(date) {
+        this.setState({
+          startDate: date
+        })
       }
     
-      showHide(e) {
-        e.preventDefault();
-        
-        this.setState({
-          collapseMenu: !this.state.collapseMenu
-        });
+    onFormSubmit(e) {
+    e.preventDefault();
+    console.log(this.state.startDate)
+    }
 
-        
-      }
+    alert(e) {
+    e.preventDefault();
+    alert("Libro agregado exitosamente");
+    }
   
     render() {
       const { libro } = this.props;
       const {index} = this.props;
+      const {today} = new Date();
+      const {
+        values,
+        touched,
+        setFieldValue,
+        setFieldTouched
+      } = this.props;
+      const { open } = this.state;
       return (
         <>
         <tr key="main" onClick={this.showHide} href="#collapseExample" role="button"
@@ -82,8 +121,8 @@ class LibroTableRow extends React.Component {
                 <hr></hr>
                 <form>
                     <div className="mb-3 row">
-                        <label  style={{fontSize: "16px"}} for="inputLugar" className="col-md-5 col-form-label">Seleccione si desea el libro a domicilio o en sala:</label>
-                        <div className="col-sm-3">
+                        <label  style={{fontSize: "16px"}} for="inputLugar" className="col-md-5 col-form-label">Seleccione si desea el libro a domicilio o en sala</label>
+                        <div className="col-sm-3 col-md-4">
                             <select className="form-select" aria-label="Default select example">
                                 <option selected value="domicilio">Domicilio</option>
                                 <option value="sala">Sala</option>
@@ -91,19 +130,50 @@ class LibroTableRow extends React.Component {
                         </div>
                     </div>
 
+                    <div className="mb-3 row">
+                        <label  style={{fontSize: "16px"}} for="inputLugar" className="col-md-5 col-form-label">Selecciona la fecha de reserva</label>
+                        <div className="col-sm-3 col-md-4"><DatePicker
+                            showTimeSelect
+                            className='form-control'
+                            minDate= {this.state.today}
+                            selected={ this.state.startDate }
+                            onChange={ this.handleChange }
+                            name="startDate"
+                            dateFormat="MM/dd/yyyy HH:mm:ss"
+                        />
+                        </div>
+                    </div>
+
     
 
                     <div className="d-grid d-md-flex justify-content-end align-items-center pe-5">
                         <p style={{fontSize: "13px"}} className="align-items-center pe-2">Su libro tendrá fecha de devolución máxima hasta el (fecha a calcular)</p>
-                        <button type="submit" className="btn btn-sm btn-primary mb-3 shadow">Agregar</button>
+                        <button onClick={this.handleClick} type="button" className="btn btn-sm btn-primary mb-3 shadow">Agregar</button>
+                        <Snackbar
+                            anchorOrigin={{
+                                vertical: "bottom",
+                                horizontal: "center"
+                            }}
+                            open={open}
+                            onClose={this.handleClose}
+                            autoHideDuration={2000}
+                            >
+                            
+                            <MuiAlert
+                                onClose={this.handleClose}
+                                severity="success"
+                                elevation={6}
+                                variant="filled"
+                            >
+                                Su libro ha sido agregado
+                            </MuiAlert>
+                        </Snackbar>
                     </div>
                 </form>
                 </div>
                 </Collapse>
             </td>
             </tr>
-        
-        
         </>
       );
     }

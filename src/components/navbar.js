@@ -69,7 +69,7 @@ const NavBar = () => {
                                 </button>
                             </div>
                             <Dropdown>
-                            <DropdownToggle class="bs-icon-lg bs-icon-circle bs-icon-primary shadow bs-icon my-4 border-0"><svg class="bi bi-person" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                            <DropdownToggle class="bs-icon-md bs-icon-circle bs-icon-primary shadow bs-icon my-4 border-0"><svg class="bi bi-person" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"></path>
                                 </svg>
                             </DropdownToggle>
@@ -109,13 +109,22 @@ const NavBar = () => {
                             <ul className="navbar-nav mx-auto">
                                 <li className="nav-item"><Link className="nav-link active" to="/">Inicio</Link></li>
                                 <li className="nav-item"><Link className="nav-link active" to="/catalogo">Catálogo</Link></li>
-                                <li className="nav-item"><Link className="nav-link active" to="/">Solicitudes</Link></li>
-                                <li className="nav-item"><Link className="nav-link active" to="/">Generar Prestamo</Link></li>
+                                <li className="nav-item"><Link className="nav-link active" to="/solicitudes">Solicitudes</Link></li>
+                                <li className="nav-item"><Link className="nav-link active" to="/prestamos">Préstamos</Link></li>
                             </ul>
-                            <div class="bs-icon-lg bs-icon-circle bs-icon-primary shadow bs-icon my-4"><svg class="bi bi-person" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                            <Dropdown>
+                            <DropdownToggle class="bs-icon-md bs-icon-circle bs-icon-primary shadow bs-icon my-4 border-0"><svg class="bi bi-person" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"></path>
                                 </svg>
-                            </div>
+                            </DropdownToggle>
+
+                            <Dropdown.Menu>
+                                <Dropdown.Item href="#/action-1">Solicitudes gestionadas</Dropdown.Item>
+                                <Dropdown.Item href="#/action-2">Préstamos gestionados</Dropdown.Item>
+                                <Dropdown.Item href="#/action-3">Configuración</Dropdown.Item>
+                                <Dropdown.Item href="#/action-4">Cerrar sesión</Dropdown.Item>
+                            </Dropdown.Menu>
+                            </Dropdown>
                             <ul className="navbar-nav">
                                 <li className="nav-item"></li>
                                 <li className="nav-item"></li>
