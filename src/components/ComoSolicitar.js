@@ -1,6 +1,7 @@
 import React from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import {Link} from 'react-router-dom';
 
 class ComoSolicitar extends React.Component{
     componentDidMount() {
@@ -14,8 +15,13 @@ class ComoSolicitar extends React.Component{
             <div>
                 <header >
                     <div className="container py- 5">
-                        <div className="p-4 p-lg-5 rounded-3 text-center bg-primary-gradient shadow-sm" data-aos="fade-up" data-aos-duration="1000">
-                            <div className="m-4 m-lg-5">
+                        <div className="p-4 p-lg-5 rounded-3 bg-primary-gradient shadow-sm" data-aos="fade-up" data-aos-duration="1000">
+                            <div className="text-left">
+                                <Link to="/"><button type="button" className="btn btn-sm btn-primary px-3 mb-3 shadow"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                <path fillRule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                                </svg>Volver</button></Link>
+                            </div>
+                            <div className="m-4 m-lg-5 text-center">
                                 <h1 className="display-5 fw-bold">¿Cómo puedo solicitar un libro?</h1>
                                 <p className="fs-4">Aquí aprenderas los detalles y los pasos para poder solicitar los libros disponibles en nuestra biblioteca</p>
                             </div>

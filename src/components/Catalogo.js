@@ -6,6 +6,7 @@ import Collapse from 'react-bootstrap/Collapse';
 import DatePicker from "react-datepicker";
 import { Snackbar } from '@mui/material';
 import MuiAlert from "@mui/material/Alert";
+import {Link} from 'react-router-dom';
 
 class LibroTableRow extends React.Component {
     state = { expanded: false }
@@ -61,13 +62,7 @@ class LibroTableRow extends React.Component {
     render() {
       const { libro } = this.props;
       const {index} = this.props;
-      const {today} = new Date();
-      const {
-        values,
-        touched,
-        setFieldValue,
-        setFieldTouched
-      } = this.props;
+      
       const { open } = this.state;
       return (
         <>
@@ -189,8 +184,13 @@ export class Catalogo extends Component {
             <div>
                 <header>
                         <div className="container py- 5">
-                            <div className="p-4 p-lg-5 rounded-3 text-center bg-primary-gradient shadow-sm" data-aos="fade-up" data-aos-duration="1000">
-                                <div className="m-4 m-lg-5">
+                            <div className="p-2 p-lg-3 rounded-3 bg-primary-gradient shadow-sm" data-aos="fade-up" data-aos-duration="1000">
+                                <div className="text-left">
+                                    <Link to="/"><button type="button" className="btn btn-sm btn-primary px-3 mb-3 shadow"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                    <path fillRule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                                    </svg>Volver</button></Link>
+                                </div>
+                                <div className="m-4 m-lg-5 text-center">
                                     <h1 className="display-5 fw-bold">Catálogo</h1>
                                 </div>
 
@@ -215,8 +215,8 @@ export class Catalogo extends Component {
                                             <select className="form-select" aria-label="Default select example">
                                                 <option selected>Seleccione la categoría</option>
                                                 <option value="literatura">Literatura</option>
-                                                <option value="2">Two</option>
-                                                <option value="3">Three</option>
+                                                <option value="2">Ciencias</option>
+                                                <option value="3">Ciencias Sociales</option>
                                             </select>
                                         </div>
                                     </div>

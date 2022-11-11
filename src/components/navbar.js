@@ -4,11 +4,44 @@ import {Nav} from 'react-bootstrap';
 import Login from "./Login";
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownToggle from 'react-bootstrap/esm/DropdownToggle';
+import CerrarSesion from './CerrarSesion';
 
-const NavBar = () => {
-    var log = 2
 
-    if (log == 0){
+export class NavBar extends React.Component {
+    constructor(props){
+        super(props);
+
+        this.state = {
+            email: '',
+            password: ''
+        };
+
+        this.childToParent = this.childToParent.bind(this);
+    }
+
+    childToParent = (email, password) => {
+        this.setState({
+            email: email,
+            password: password
+        })
+    }
+
+    childToParentClose = () => {
+        this.setState({
+            email: '',
+            password: ''
+        })
+    }
+
+    render() {
+        var log = 0;
+        console.log(this.state.email);
+        if(this.state.email === "mclovin@email.com"){
+            log = 1;
+        } else if(this.state.email === "peter@bec.cl"){
+            log = 2;
+        }
+        if (log == 0){
         return(
             <>
                 <nav className="navbar navbar-light navbar-expand-md sticky-top navbar-shrink py-3" id="mainNav">
@@ -34,10 +67,10 @@ const NavBar = () => {
                         </div>
                     </div>
                 </nav>            
-                <Login />
+                <Login childToParent={this.childToParent}/>
             </>
         );
-    }
+        }
     else if (log == 1){
         return(
             <>
@@ -61,7 +94,7 @@ const NavBar = () => {
                                     </button>
                                 </Link>
                             </div>
-                            <div style={{paddingRight: "15px"}}>
+                            <div style={{paddingRight: "0px"}}>
                                 <button type="button" style={{backgroundColor: "white"}} className="border-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
                                     <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
@@ -69,16 +102,16 @@ const NavBar = () => {
                                 </button>
                             </div>
                             <Dropdown>
-                            <DropdownToggle class="bs-icon-md bs-icon-circle bs-icon-primary shadow bs-icon my-4 border-0"><svg class="bi bi-person" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"></path>
-                                </svg>
+                            <DropdownToggle className="border-0 bg-transparent px-3">
+                                <img  style={{width:"50px"}}className="rounded-circle shadow-4-strong" alt="avatar2" src="https://i.pinimg.com/originals/30/8d/79/308d795c3cac0f8f16610f53df4e1005.jpg"/>
                             </DropdownToggle>
 
                             <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1">Mis solicitudes</Dropdown.Item>
-                                <Dropdown.Item href="#/action-2">Mis préstamos</Dropdown.Item>
-                                <Dropdown.Item href="#/action-3">Configuración</Dropdown.Item>
-                                <Dropdown.Item href="#/action-4">Cerrar sesión</Dropdown.Item>
+                                <Link to="/mis-solicitudes"><Dropdown.Item href="#/action-1">Mis solicitudes</Dropdown.Item></Link>
+                                <Link to="/mis-prestamos"><Dropdown.Item href="#/action-2">Mis préstamos</Dropdown.Item></Link>
+                                <Link to="/configuracion"><Dropdown.Item href="#/action-3">Configuración</Dropdown.Item></Link>
+                                <hr style={{margin: "5px"}}></hr>
+                                <Dropdown.Item href="#cerrar-sesion" data-bs-target="#cerrar-sesion" data-bs-toggle='modal'>Cerrar sesión</Dropdown.Item>
                             </Dropdown.Menu>
                             </Dropdown>
                             <ul className="navbar-nav">
@@ -92,8 +125,8 @@ const NavBar = () => {
                         </ul>
                         </div>
                     </div>
-                </nav>            
-                <Login />
+                </nav>
+                <CerrarSesion childToParentClose={this.childToParentClose}/>            
             </>
         );
     }
@@ -113,18 +146,19 @@ const NavBar = () => {
                                 <li className="nav-item"><Link className="nav-link active" to="/prestamos">Préstamos</Link></li>
                             </ul>
                             <Dropdown>
-                            <DropdownToggle class="bs-icon-md bs-icon-circle bs-icon-primary shadow bs-icon my-4 border-0"><svg class="bi bi-person" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"></path>
-                                </svg>
+                            <DropdownToggle className="border-0 bg-transparent px-3">
+                                <img  style={{width:"50px"}} className="rounded-circle shadow-4-strong" alt="avatar2" src="https://i.pinimg.com/originals/30/8d/79/308d795c3cac0f8f16610f53df4e1005.jpg"/>
                             </DropdownToggle>
 
                             <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1">Solicitudes gestionadas</Dropdown.Item>
-                                <Dropdown.Item href="#/action-2">Préstamos gestionados</Dropdown.Item>
-                                <Dropdown.Item href="#/action-3">Configuración</Dropdown.Item>
-                                <Dropdown.Item href="#/action-4">Cerrar sesión</Dropdown.Item>
+                                <Link to="/solicitudes-gestionadas"><Dropdown.Item href="#/action-1">Solicitudes gestionadas</Dropdown.Item></Link>
+                                <Link to="/prestamos-creados"><Dropdown.Item href="#/action-2">Préstamos creados</Dropdown.Item></Link>
+                                <Link to="/configuracion"><Dropdown.Item href="#/action-3">Configuración</Dropdown.Item></Link>
+                                <hr style={{margin: "5px"}}></hr>
+                                <Dropdown.Item href="#cerrar-sesion" data-bs-target="#cerrar-sesion" data-bs-toggle='modal'>Cerrar sesión</Dropdown.Item>
                             </Dropdown.Menu>
                             </Dropdown>
+                            
                             <ul className="navbar-nav">
                                 <li className="nav-item"></li>
                                 <li className="nav-item"></li>
@@ -137,9 +171,10 @@ const NavBar = () => {
                         </div>
                     </div>
                 </nav>            
-                <Login />
+                <CerrarSesion childToParentClose={this.childToParentClose}/>
             </>
         );
+    }
     }
     
 }

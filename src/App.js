@@ -8,13 +8,18 @@ import {
 } from "react-router-dom";
 import NavBar from './components/NavBar';
 import Inicio from './components/Inicio';
-import AppRouter from './components/AppRouter';
 import ComoSolicitar from './components/ComoSolicitar';
 import Catalogo from './components/Catalogo';
 import Carrito from './components/Carrito';
 import Solicitudes from './components/Solicitudes'
 import MisSolicitudes from './components/MisSolicitudes';
+import MisPrestamos from './components/MisPrestamos';
 import Prestamos from './components/Prestamos';
+import SolicitudesGestionadas from './components/SolicitudesGestionadas';
+import PrestamosCreados from './components/PrestamosCreados';
+import AgregarPrestamo from './components/AgregarPrestamo';
+import Configuracion from './components/Configuracion';
+import Comprobante from './components/Comprobante';
 
 class App extends React.Component {
   render() {
@@ -34,6 +39,12 @@ class App extends React.Component {
           <Route path="/solicitudes" element={<Solicitudes/>}></Route>
           <Route path="/prestamos" element={<Prestamos/>}></Route>
           <Route path="/mis-solicitudes" element={<MisSolicitudes/>}></Route>
+          <Route path="/mis-prestamos" element={<MisPrestamos/>}></Route>
+          <Route path="/solicitudes-gestionadas" element={<SolicitudesGestionadas/>}></Route>
+          <Route path="/prestamos-creados" element={<PrestamosCreados/>}></Route>
+          <Route path="/generar-prestamo" element={<AgregarPrestamo/>}></Route>
+          <Route path="/configuracion" element={<Configuracion/>}></Route>
+          <Route path="/comprobante" element={<Comprobante/>}></Route>
         </Routes>
       </BrowserRouter>
     );

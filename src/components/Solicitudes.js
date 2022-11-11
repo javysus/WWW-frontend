@@ -1,23 +1,75 @@
 import React, { Component } from 'react'
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-
+import {Link} from 'react-router-dom';
+import { Snackbar } from '@mui/material';
+import MuiAlert from "@mui/material/Alert";
+import solicitudes_pendientes from '../mocking/solicitudes_pendientes';
+import moment from 'moment';
 class Solicitudes extends React.Component{
     componentDidMount() {
         AOS.init();
     }
+    state = { expanded: false }
+    constructor(props) {
+      super(props);
+  
+      this.state = {
+        collapseMenu: true,
+        open: false,
+        isChanged: false,
+        ubicacion: Array(solicitudes_pendientes.data.getSolicitudEstado.length).fill({ubicacion: "Seleccione ejemplar"})
+      };
+  
+      this.handleClick = this.handleClick.bind(this);
+      this.handleClose = this.handleClose.bind(this);
+      this.handleChange = this.handleChange.bind(this);
+      this.calcularFecha = this.calcularFecha.bind(this);
+    }
+
+      calcularFecha = (fecha) => {
+          return moment(fecha).format('MMM DD YYYY, h:mm:ss a');
+      } 
+
+    handleChange = (index) => (e) => {
+      const index_ejemplar = e.target.value;
+      console.log(index_ejemplar);
+      const list = this.state.ubicacion;
+      if(index_ejemplar===""){
+        list[index] = {ubicacion: "Seleccione ejemplar"};
+      }
+      else{
+        list[index] = {ubicacion: solicitudes_pendientes.data.getSolicitudEstado[index].libro.ejemplares[index_ejemplar].ubicacion};
+      }
+      this.setState({
+        ubicacion: list
+      })
+    }
+    handleOpen = () => this.setState({ open: true });
+
+    handleClose = () => this.setState({ open: false });
+
+    handleClick = () => this.setState({ open: true });
+
     render() {
+        const { open } = this.state;
         return(
             <>
                 <header>
-                    <div className="container py-5">
-                        <div className="p-4 p-lg-5 rounded-3 text-center bg-primary-gradient shadow-sm" data-aos="fade-up" data-aos-duration="1000">
-                            <div className="m-4 m-lg-5">
+                    <div className="container py-0">
+                        <div className="p-2 p-lg-3 rounded-3 bg-primary-gradient shadow-sm" data-aos="fade-up" data-aos-duration="1000">
+                          <div className="text-left">
+                            <Link to="/"><button type="button" className="btn btn-sm btn-primary px-3 mb-3 shadow"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                            <path fillRule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                            </svg>Volver</button></Link>
+                          </div>
+                            <div className="m-4 m-lg-5 text-center">
                                 <h1 className="display-5 fw-bold">Solicitudes</h1>
                             </div>
                         </div>
                     </div>
                 </header>
+                
                 <section className="h-100 h-custom">
                 <div className="container h-100 py-5">
                   <div className="row d-flex justify-content-left align-items-center h-100">
@@ -26,7 +78,7 @@ class Solicitudes extends React.Component{
                             <span className="bs-icon-sm bs-icon-circle bs-icon-primary text-bg-warning shadow d-flex justify-content-center align-items-center me-2 bs-icon" style={{width: '30px', height: '30px'}}><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-lightbulb" viewBox="0 0 16 16">
                                 <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
                                 </svg>
-                            </span><h6 style={{paddingTop: "8px"}}>Seleccione las solicitudes que quiere gestionar</h6>
+                            </span><h6 style={{paddingTop: "8px"}} className="fw-bold">Seleccione las solicitudes que quiere gestionar</h6>
                         </div>
                       <div className="table-responsive">
                         <table className="table table-hover">
@@ -41,80 +93,46 @@ class Solicitudes extends React.Component{
                             </tr>
                           </thead>
                           <tbody>
-                            <tr>
-                              <th scope="row">
-                                <div className="d-flex align-items-center">
-                                    <td className="align-middle">
-                                        <div class="form-check-md">
-                                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"/>
-                                        </div>
-                                    </td>
-                                  <div className="flex-column ms-4">
-                                    <p className="mb-2">Thinking, Fast and Slow</p>
-                                    <p className="mb-0">Daniel Kahneman</p>
+                            
+                            {solicitudes_pendientes.data.getSolicitudEstado.map((solicitud, index0) =>
+                                <tr key={index0}>
+                                <th scope="row">
+                                  <div className="d-flex align-items-center">
+                                      <td className="align-middle">
+                                          <div class="form-check-md">
+                                              <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"/>
+                                          </div>
+                                      </td>
+                                    <div className="flex-column ms-4">
+                                      <p className="mb-2">{solicitud.libro.titulo}</p>
+                                      <p className="mb-0">{solicitud.libro.autor}</p>
+                                    </div>
                                   </div>
-                                </div>
-                              </th>
-                              <td className="align-middle">
-                                <p className="mb-0" style={{fontWeight: "500;"}}>Multimedia</p>
-                              </td>
-                              <td className="align-middle">
-                                <p className="mb-0" style={{fontWeight: "500;"}}>En sala</p>
-                              </td>
-                              <td className="align-middle">
-                                <p className="mb-0" style={{fontWeight: "500;"}}>30/11/2022</p>
-                              </td>
-                              <td className="align-middle">
-                                <div className="col-sm-9">
-                                    <select className="form-select" aria-label="Default select example">
-                                        <option selected>Seleccione un ejemplar</option>
-                                        <option value="ejemplar1">As39uwu909uwuwuwuteamu</option>
-                                        <option value="ejemplar2">NosexdUnaIDRaraSupongo</option>
-                                        <option value="ejemplar3">BubuCasateConmigo?DeVerdadQueQuiero:c</option>
-                                    </select>
-                                </div>
-                              </td>
-                              <td className="align-middle">
-                                <p className="mb-0" style={{fontWeight: "500;"}}>Algo para cambiar automaticamente el ñe jsjsjsjs</p>
-                              </td>
-                            </tr>
-                            <tr>
-                              <th scope="row" className="border-bottom-0">
-                                <div className="d-flex align-items-center">
-                                    <td className="align-middle">
-                                        <div class="form-check-md">
-                                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"/>
-                                        </div>
-                                    </td>
-                                  <div className="flex-column ms-4">
-                                    <p className="mb-2">Homo Deus: A Brief History of Tomorrow</p>
-                                    <p className="mb-0">Yuval Noah Harari</p>
+                                </th>
+                                <td className="align-middle">
+                                  <p className="mb-0" style={{fontWeight: "500"}}>{solicitud.libro.tipo}</p>
+                                </td>
+                                <td className="align-middle">
+                                  <p className="mb-0" style={{fontWeight: "500"}}>{solicitud.lugar}</p>
+                                </td>
+                                <td className="align-middle">
+                                  <p className="mb-0" style={{fontWeight: "500"}}>{this.calcularFecha(solicitud.fecha_reserva)}</p>
+                                </td>
+                                <td className="align-middle">
+                                  <div className="col-sm-9">
+                                      <select onChange={this.handleChange(index0)} className="form-select" aria-label="Default select example" required>
+                                        <option selected value="">Seleccione un ejemplar</option>
+                                          {solicitud.libro.ejemplares.map((ejemplar, index) => 
+                                            <option value={index}>{ejemplar.id}</option>
+                                          )}
+                                      </select>
                                   </div>
-                                </div>
-                              </th>
-                              <td className="align-middle border-bottom-0">
-                                <p className="mb-0" style={{fontWeight: "500;"}}>Libro</p>
-                              </td>
-                              <td className="align-middle border-bottom-0">
-                                <p className="mb-0" style={{fontWeight: "500;"}}>Domicilio</p>
-                              </td>
-                              <td className="align-middle border-bottom-0">
-                                <p className="mb-0" style={{fontWeight: "500;"}}>13/11/2022</p>
-                              </td>
-                              <td className="align-middle border-bottom-0">
-                                <div className="col-sm-9">
-                                    <select className="form-select" aria-label="Default select example">
-                                        <option selected>Seleccione un ejemplar</option>
-                                        <option value="ejemplar1">A1B2C3D4E5F6</option>
-                                        <option value="ejemplar2">MiBubiEsLaMasLindaHermosaPreciosa</option>
-                                        <option value="ejemplar3">AmoAMiBubuAaaaaaaaahuwu</option>
-                                    </select>
-                                </div>
-                              </td>
-                              <td className="align-middle">
-                                <p className="mb-0" style={{fontWeight: "500;"}}>Algo para cambiar automaticamente el ñe x2</p>
-                              </td>
-                            </tr>
+                                </td>
+                                <td className="align-middle">
+                                  <p className="mb-0" style={{fontWeight: "500"}}>{this.state.ubicacion[index0].ubicacion}</p>
+                                </td>
+                              </tr>
+                              )}
                           </tbody>
                         </table>
                       </div>
@@ -122,11 +140,30 @@ class Solicitudes extends React.Component{
                       <div className="card-body p-4">
                           <div className="row justify-content-end">
                               <div className="col-lg-4 col-xl-2">
-                              <button type="button" className="btn btn-primary btn-block btn-md shadow">
+                              <button onClick = {this.handleClick} type="button" className="btn btn-primary btn-block btn-md shadow">
                                   <div className="d-flex justify-content-between">
                                   <span>Confirmar</span>
                                   </div>
                               </button>
+                              <Snackbar
+                                  anchorOrigin={{
+                                      vertical: "bottom",
+                                      horizontal: "center"
+                                  }}
+                                  open={open}
+                                  onClose={this.handleClose}
+                                  autoHideDuration={2000}
+                                  >
+                                  
+                                  <MuiAlert
+                                      onClose={this.handleClose}
+                                      severity="success"
+                                      elevation={6}
+                                      variant="filled"
+                                  >
+                                      Sus solicitudes han sido gestionadas
+                                  </MuiAlert>
+                              </Snackbar>
                               </div>
                           </div>
                       </div>
