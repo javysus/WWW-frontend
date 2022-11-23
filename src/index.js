@@ -6,6 +6,7 @@ import "bootstrap/dist/js/bootstrap.bundle";
 import "react-datepicker/dist/react-datepicker.css";
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { CookiesProvider } from "react-cookie";
 import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
 
 const client = new ApolloClient({
@@ -16,7 +17,9 @@ const client = new ApolloClient({
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <ApolloProvider client={client}>
+    <CookiesProvider>
     <App />
+    </CookiesProvider>
   </ApolloProvider>
 );
 

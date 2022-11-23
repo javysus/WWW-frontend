@@ -1,5 +1,7 @@
 import React from 'react';
 import {useLazyQuery, gql} from '@apollo/client';
+import Modal from 'react-bootstrap/Modal';
+import { withCookies, Cookies } from "react-cookie";
 
 const VALIDACION_USUARIO = gql`query ValidacionUsuario($correo: String, $contrasenia: String) {
     ValidacionUsuario(correo: $correo, contrasenia: $contrasenia) {
@@ -7,28 +9,31 @@ const VALIDACION_USUARIO = gql`query ValidacionUsuario($correo: String, $contras
       usuario
       bibliotecario
       validacion
+      id
     }
   }`;
 
-var data_universal;
-let enviado = false;
-
 export default function Login(props){
-    const [validarUsuario, { loading, error, data }] = useLazyQuery(VALIDACION_USUARIO);
+    const [validarUsuario, { loading, error, data }] = useLazyQuery(VALIDACION_USUARIO, {
+        onCompleted: someData => {
+            console.log(someData);
+            props.childToParent(someData.ValidacionUsuario);
+        }
+    });
     /*if (loading) return <p>Loading ...</p>;
-    if (error) return `Error! ${error}`;*/
+    if (error) return `Error! ${error}`;
     
     if(data && !enviado){
         enviado = true;
         props.childToParent(data.ValidacionUsuario);
-    }
+    }*/
     //console.log(data);
     return (
-        <Login2 hookFunction={validarUsuario} data={data}></Login2>
+        <LoginComponent hookFunction={validarUsuario} closeModal = {props.closeModal} show={props.show} data={data}></LoginComponent>
     )
 }
 
-class Login2 extends React.Component {
+class LoginComponent extends React.Component {
     
     constructor(props) {
         super(props);
@@ -51,13 +56,18 @@ class Login2 extends React.Component {
     }*/
 
     onTrigger = (e) => {
-        //Validar_usuario({correo: e.target.email.value, constrasenia: e.target.password.value})
-        
-        //console.log(data);
-        
-        this.props.childToParent(e.target.email.value, e.target.password.value);
-
         e.preventDefault();
+
+        this.props.hookFunction({variables: {correo: e.target.email.value, contrasenia: e.target.password.value}});
+        console.log(this.props.data);
+        var resultados = this.props.data.ValidacionUsuario;
+
+        if (resultados.usuario && resultados.validacion){
+            this.props.closeModal()
+        } 
+        else if(resultados.bibliotecario && resultados.validacion){
+            this.props.closeModal()
+        }
     };
 
     handleSubmit = (event) => {
@@ -75,31 +85,31 @@ class Login2 extends React.Component {
 
         return(
             <>
-                <div className="modal fade" role="dialog" tabIndex="-1" id="modal-1">
-                    <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h4 className="modal-title">Iniciar sesión</h4><button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div className="modal-body">
+                <Modal show={this.props.show} onHide={this.props.closeModal} role="dialog" tabIndex="-1" id="modal-1">
+                    
+                        {/*<div className="modal-content">*/}
+                            <Modal.Header closeButton>
+                                <Modal.Title>Iniciar sesión</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
                                 <div className="card">
                                     <div className="card-body text-center d-flex flex-column align-items-center">
                                         <div className="bs-icon-xl bs-icon-circle bs-icon-primary shadow bs-icon my-4"><i class="bi bi-person"></i>
                                         </div>
-                                        <form method="post" onChange={this.handleChange} onSubmit={(e) => {e.preventDefault(); hookFunction({variables: {correo: e.target.email.value, contrasenia: e.target.password.value}})}}>
+                                        <form method="post" onSubmit={(e) => {e.preventDefault(); hookFunction({variables: {correo: e.target.email.value, contrasenia: e.target.password.value}}); }}>
                                             <div className="mb-3"><input class="form-control" type="email" name="email" placeholder="Correo"/></div>
                                             <div className="mb-3"><input class="form-control" type="password" name="password" placeholder="Contraseña"/></div>
                                             <div className="mb-3"><button class="btn btn-primary shadow d-block w-100" type="submit">Iniciar sesión</button></div>
                                         </form>
 
-                                        {data ? (String(data.ValidacionUsuario.mensaje)):""}
+                                        {data ? <div class="alert alert-danger" role="alert">{(String(data.ValidacionUsuario.mensaje))}</div>:""}
                                     </div>
                                 </div>
-                            </div>
-                            <div className="modal-footer"><button className="btn btn-light" type="button" data-bs-dismiss="modal">Cerrar</button></div>
-                        </div>
-                    </div>
-                </div>
+                            </Modal.Body>
+                            <Modal.Footer><button className="btn btn-light" type="button" onClick={this.props.closeModal}>Cerrar</button></Modal.Footer>
+                        {/*</div>*/}
+                    
+                </Modal>
             </>
         )
     }

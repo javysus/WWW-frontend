@@ -6,12 +6,14 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownToggle from 'react-bootstrap/esm/DropdownToggle';
 import CerrarSesion from './CerrarSesion';
 import {useQuery, gql} from '@apollo/client';
+import { withCookies, Cookies } from "react-cookie";
 
 const VALIDACION_USUARIO = gql`query Query($correo: String, $constrasenia: String) {
     ValidacionUsuario(correo: $correo, constrasenia: $constrasenia)
   }`;
 
 export class NavBar extends React.Component {
+    
     constructor(props){
         super(props);
 
@@ -21,9 +23,14 @@ export class NavBar extends React.Component {
             usuario: false,
             bibliotecario: false,
             validacion: false,
+            showModal: false,
+            user: this.props.cookies.get("user") || "",
+            biblio: this.props.cookies.get("biblio") || "",
         };
 
         this.childToParent = this.childToParent.bind(this);
+        this.closeModal = this.closeModal.bind(this);
+        this.openModal = this.openModal.bind(this);
     }
 
     childToParent = (data) => {
@@ -31,7 +38,21 @@ export class NavBar extends React.Component {
             email: email,
             password: password
         })*/
-
+        const { cookies } = this.props;
+        console.log(data);
+        if (data.usuario && data.validacion){
+            /*document.getElementById("modal-1").classList.remove("show", "d-block");
+            document.querySelectorAll(".modal-backdrop")
+            .forEach(el => el.classList.remove("modal-backdrop"));*/
+            cookies.set("user", data.id, { path: "/" }); // setting the cookie
+            this.setState({ user: cookies.get("user") });
+            this.closeModal()
+        } 
+        else if(data.bibliotecario && data.validacion){
+            cookies.set("biblio", data.id, { path: "/" }); // setting the cookie
+            this.setState({ user: cookies.get("biblio") });
+            this.closeModal()
+        }
         this.setState({
             usuario: data.usuario,
             bibliotecario: data.bibliotecario,
@@ -47,9 +68,19 @@ export class NavBar extends React.Component {
         })
     }
 
+    closeModal = () => {
+        this.setState({showModal: false});
+    }
+
+    openModal = () => {
+
+        this.setState({showModal: true});
+    }
+
     render() {
-        
-    if (this.state.usuario && this.state.validacion){
+    var user_id = this.state.user;
+    var biblio_id = this.state.biblio;
+    if (user_id !== ""){
         return(
             <>
                 <nav className="navbar navbar-light navbar-expand-md sticky-top navbar-shrink py-3" id="mainNav">
@@ -108,7 +139,7 @@ export class NavBar extends React.Component {
             </>
         );
     }
-    else if (this.state.bibliotecario && this.state.validacion){
+    else if (biblio_id !== ""){
         return(
             <>
                 <nav className="navbar navbar-light navbar-expand-md sticky-top navbar-shrink py-3" id="mainNav">
@@ -166,7 +197,7 @@ export class NavBar extends React.Component {
                                 <li className="nav-item"><Link className="nav-link active" to="/">Inicio</Link></li>
                                 <li className="nav-item"><Link className="nav-link active" to="/catalogo">Catálogo</Link></li>
                                 <li className="nav-item"><Link className="nav-link active" to="/como-solicitar">¿Cómo solicitar?</Link></li>
-                            </ul><a className="btn btn-primary shadow" role="button" href="#modal-1" data-bs-target="#modal-1" data-bs-toggle="modal">Iniciar sesión</a>
+                            </ul><a className="btn btn-primary shadow" onClick={this.openModal} href="#modal-1" data-bs-target="#modal-1" data-bs-toggle="modal" role="button">Iniciar sesión</a>
                             <ul className="navbar-nav">
                                 <li className="nav-item"></li>
                                 <li className="nav-item"></li>
@@ -179,7 +210,7 @@ export class NavBar extends React.Component {
                         </div>
                     </div>
                 </nav>            
-                <Login childToParent={this.childToParent}/>
+                <Login childToParent={this.childToParent} show={this.state.showModal} closeModal={this.closeModal}/>
             </>
         );
         }
@@ -187,4 +218,4 @@ export class NavBar extends React.Component {
     
     
 }
-export default NavBar;
+export default withCookies(NavBar);

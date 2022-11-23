@@ -7,7 +7,39 @@ import DatePicker from "react-datepicker";
 import { Snackbar } from '@mui/material';
 import MuiAlert from "@mui/material/Alert";
 import {Link} from 'react-router-dom';
+import {useLazyQuery, useQuery, gql} from '@apollo/client';
 
+const GET_CATALOGO = gql`query GetLibrosCatalogo($titulo: String, $autor: String, $categoria: String) {
+    getLibrosCatalogo(titulo: $titulo, autor: $autor, categoria: $categoria) {
+      id_libro
+      titulo
+      autor
+      editorial
+      edicion
+      anio
+      categoria
+      tipo
+      subtipo
+      ejemplares_disponibles
+      ejemplares_sala
+    }
+  }`;
+
+  const GET_CATALOGO_INICIAL = gql`query GetLibrosCatalogo($titulo: String, $autor: String, $categoria: String) {
+    getLibrosCatalogo(titulo: $titulo, autor: $autor, categoria: $categoria) {
+      id_libro
+      titulo
+      autor
+      editorial
+      edicion
+      anio
+      categoria
+      tipo
+      subtipo
+      ejemplares_disponibles
+      ejemplares_sala
+    }
+  }`;
 class LibroTableRow extends React.Component {
     state = { expanded: false }
     today = new Date();
@@ -174,11 +206,37 @@ class LibroTableRow extends React.Component {
     }
   }
 
-export class Catalogo extends Component {
+export default function Catalogo(props){
+    const { loading: loading_zero, error: error_zero, data: data_zero } = useQuery(GET_CATALOGO, {
+        variables: { titulo: "", autor: "", categoria: "" },
+      });
+    
+    const [obtenerCatalogo, { loading, error, data }] = useLazyQuery(GET_CATALOGO, {
+        onCompleted: someData => {
+            console.log(someData);
+        }
+    });
+
+    return <CatalogoComponent getCatalogo={obtenerCatalogo} loading = {loading} loading_zero = {loading_zero} data_zero={data_zero} data={data}></CatalogoComponent>
+}
+class CatalogoComponent extends Component {
     componentDidMount() {
         AOS.init();
     }
 
+    constructor(props){
+        super(props);
+
+        this.buscarLibros = this.buscarLibros.bind(this);
+    }
+
+    buscarLibros = (e) => {
+        e.preventDefault();
+        var titulo = e.target.titulo.value ? e.target.titulo.value:"";
+        var autor = e.target.autor.value ? e.target.autor.value:"";
+        var categoria = e.target.categoria.value ? e.target.categoria.value:"";
+        this.props.getCatalogo({variables: {titulo: titulo, autor: autor, categoria: categoria}});
+    }
     render() {
         return (
             <div>
@@ -194,29 +252,40 @@ export class Catalogo extends Component {
                                     <h1 className="display-5 fw-bold">Catálogo</h1>
                                 </div>
 
-                                <form method="post">
+                                <form method="post" onSubmit={this.buscarLibros}>
                                     <div className="mb-3 row">
                                         <label for="inputTitulo" className="col-sm-2 col-form-label">Título</label>
                                         <div className="col-sm-9">
-                                            <input type="text" className="form-control" id="inputTitulo"/>
+                                            <input type="text" className="form-control" name="titulo" id="inputTitulo"/>
                                         </div>
                                     </div>
 
                                     <div className="mb-3 row">
                                         <label for="inputAutor" className="col-sm-2 col-form-label">Autor</label>
                                         <div className="col-sm-9">
-                                            <input type="text" className="form-control" id="inputAutor"/>
+                                            <input type="text" className="form-control" name="autor" id="inputAutor"/>
                                         </div>
                                     </div>
 
                                     <div className="mb-3 row">
                                         <label for="inputAutor" className="col-sm-2 col-form-label">Categoría</label>
                                         <div className="col-sm-9">
-                                            <select className="form-select" aria-label="Default select example">
-                                                <option selected>Seleccione la categoría</option>
-                                                <option value="literatura">Literatura</option>
-                                                <option value="2">Ciencias</option>
-                                                <option value="3">Ciencias Sociales</option>
+                                            <select className="form-select" defaultValue={""} name = "categoria" aria-label="Default select example">
+                                                <option value="">Seleccione la categoría</option>
+                                                <option value="Arte y Arquitectura">Arte y Arquitectura</option>
+                                                <option value="Ciencias">Ciencias</option>
+                                                <option value="Ciencias Exactas">Ciencias Exactas</option>
+                                                <option value="Ciencias Humanas">Ciencias Humanas</option>
+                                                <option value="Computación e Informática">Computación e Informática</option>
+                                                <option value="Cuerpo y Mente">Cuerpo y Mente</option>
+                                                <option value="Economía y Administración">Economía y Administración</option>
+                                                <option value="Entretención y Manualidades">Entretención y Manualidades</option>
+                                                <option value="Gastronomía, Vinos y Licores">Gastronomía, Vinos y Licores</option>
+                                                <option value="Guías de Viaje y Turismo">Guías de Viaje y Turismo</option>
+                                                <option value="Infantil y Juvenil">Infantil y Juvenil</option>
+                                                <option value="Literatura">Literatura</option>
+                                                <option value="Mundo Comic">Mundo Comic</option>
+                                                <option value="Referencias">Referencias</option>
                                             </select>
                                         </div>
                                     </div>
@@ -232,24 +301,34 @@ export class Catalogo extends Component {
 
                     <section className="pt-4">
                         <div className="container px-lg-5">
-                        <table className="table table-hover">
-                        <thead>
-                            <tr>
-                            <th scope="col">Título</th>
-                            <th scope="col">Autor</th>
-                            <th scope="col">Categoría</th>
-                            <th scope="col">Disponibles</th>
-                            <th scope="col">En sala</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-
-                            {catalogo.data.getLibrosCatalogo.map((libro, index) =>
-                            <LibroTableRow key={index} index={index + 1} libro={libro}/>
-                            )
-                            }
-                        </tbody>
-                        </table>
+                        {(this.props.loading || this.props.loading_zero) ? <p class="text-center">Cargando...</p> : this.props.data ? <table className="table table-hover">
+                            <thead>
+                                <tr>
+                                <th scope="col">Título</th>
+                                <th scope="col">Autor</th>
+                                <th scope="col">Categoría</th>
+                                <th scope="col">Disponibles</th>
+                                <th scope="col">En sala</th>
+                                </tr>
+                            </thead>
+                            <tbody> {this.props.data.getLibrosCatalogo.map((libro, index) => <LibroTableRow key={index} index={index + 1} libro={libro}/>)}
+                            </tbody>
+                            </table> : this.props.data_zero ? <table className="table table-hover">
+                            <thead>
+                                <tr>
+                                <th scope="col">Título</th>
+                                <th scope="col">Autor</th>
+                                <th scope="col">Categoría</th>
+                                <th scope="col">Disponibles</th>
+                                <th scope="col">En sala</th>
+                                </tr>
+                            </thead>
+                            <tbody> {this.props.data_zero.getLibrosCatalogo.map((libro, index) => <LibroTableRow key={index} index={index + 1} libro={libro}/>)}
+                            </tbody>
+                            </table> : <p class="text-center">Ha ocurrido un error. Inténtelo nuevamente.</p>}
+                
+        
+                        
                         </div>
                     </section>
                 </div>
@@ -257,4 +336,3 @@ export class Catalogo extends Component {
   }
 }
 
-export default Catalogo
