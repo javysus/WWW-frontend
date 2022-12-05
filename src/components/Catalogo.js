@@ -7,8 +7,10 @@ import DatePicker from "react-datepicker";
 import { Snackbar } from '@mui/material';
 import MuiAlert from "@mui/material/Alert";
 import {Link} from 'react-router-dom';
-import {useLazyQuery, useQuery, gql} from '@apollo/client';
-
+import { useCookies } from "react-cookie";
+import {useLazyQuery, useQuery, useMutation, gql} from '@apollo/client';
+import moment from 'moment';
+import { GET_USUARIO } from '../App';
 const GET_CATALOGO = gql`query GetLibrosCatalogo($titulo: String, $autor: String, $categoria: String) {
     getLibrosCatalogo(titulo: $titulo, autor: $autor, categoria: $categoria) {
       id_libro
@@ -25,22 +27,20 @@ const GET_CATALOGO = gql`query GetLibrosCatalogo($titulo: String, $autor: String
     }
   }`;
 
-  const GET_CATALOGO_INICIAL = gql`query GetLibrosCatalogo($titulo: String, $autor: String, $categoria: String) {
-    getLibrosCatalogo(titulo: $titulo, autor: $autor, categoria: $categoria) {
-      id_libro
-      titulo
-      autor
-      editorial
-      edicion
-      anio
-      categoria
-      tipo
-      subtipo
-      ejemplares_disponibles
-      ejemplares_sala
+
+const ADDLIBROCARRITO = gql`mutation Mutation($input: solicitudCarritoInput) {
+    addLibroToCarrito(input: $input) {
+      id
     }
-  }`;
-class LibroTableRow extends React.Component {
+  }`
+
+function LibroTableRow(props){
+    const [addLibroToCarrito, { data, loading, error}] = useMutation(ADDLIBROCARRITO);
+
+    return <LibroTableRowComponent data_user = {props.data_user} error = {error} key={props.key} index={props.index + 1} libro={props.libro} addLibroToCarrito={addLibroToCarrito}></LibroTableRowComponent>
+}
+ 
+class LibroTableRowComponent extends React.Component {
     state = { expanded: false }
     today = new Date();
     constructor(props) {
@@ -51,13 +51,19 @@ class LibroTableRow extends React.Component {
           open: false,
           startDate: new Date(),
           today: new Date(),
+          tipo: this.props.libro.tipo,
+          fecha_estimada: (this.props.libro.tipo === "Libro" ? moment(this.state.startDate).add(15, 'days').format('D MMM YYYY, HH:mm') : moment(this.state.startDate).add(7, 'days').format('D MMM YYYY, HH:mm')),
+          lugar: "Casa",
         };
     
         this.showHide = this.showHide.bind(this);
         this.handleClick = this.handleClick.bind(this);
         this.handleClose = this.handleClose.bind(this);
         this.handleChange = this.handleChange.bind(this);
+        this.calcularFechaEstimada = this.calcularFechaEstimada.bind(this);
+        this.handleSelectChange = this.handleSelectChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
+        
     }
     
     showHide(e) {
@@ -69,6 +75,32 @@ class LibroTableRow extends React.Component {
 
     };
 
+    calcularFechaEstimada = () => {
+        var tipo = this.state.tipo;
+        var lugar = this.state.lugar;
+        var fecha = this.state.startDate;
+        if(tipo === 'Libro'){
+            if (lugar === 'Casa'){
+                this.setState({
+                    fecha_estimada: moment(fecha).add(15, 'days').format('D MMM YYYY, HH:mm')})
+            }
+
+            else if (lugar === 'Sala'){
+                this.setState({fecha_estimada: moment(fecha).add(5, 'hours').format('D MMM YYYY, HH:mm')})
+            }
+        }
+
+        else if(tipo == 'Multimedia'){
+            if (lugar == 'Casa'){
+                this.setState({fecha_estimada: moment(fecha).add(7, 'days').format('D MMM YYYY, HH:mm')})
+            }
+            
+            else if (lugar === 'Sala'){
+                this.setState({fecha_estimada: moment(fecha).add(3, 'hours').format('D MMM YYYY, HH:mm')})
+            }
+        }
+    }
+
     handleOpen = () => this.setState({ open: true });
 
     handleClose = () => this.setState({ open: false });
@@ -78,12 +110,36 @@ class LibroTableRow extends React.Component {
     handleChange(date) {
         this.setState({
           startDate: date
-        })
+        }, () => {this.calcularFechaEstimada()})
       }
     
+    handleSelectChange(e) {
+        var lugar = e.target.value;
+        console.log("Lugar", lugar);
+        this.setState({
+            lugar: lugar
+        }, () => {this.calcularFechaEstimada()})
+        
+    }
     onFormSubmit(e) {
-    e.preventDefault();
-    console.log(this.state.startDate)
+        e.preventDefault();
+        var libro = this.props.libro.id_libro;
+        console.log(this.state.startDate)
+        var carrito = this.props.data_user.getUsuario.carrito.id;
+        console.log(carrito);
+        var fecha_reserva =  moment(e.target.startDate.value, "MM/dd/yyyy HH:mm:ss");
+        var fecha_estimada = moment(this.state.fecha_estimada, "D MMM YYYY, HH:mm");
+        console.log(fecha_reserva.format())
+        console.log(fecha_estimada.format())
+        console.log(libro)
+        this.props.addLibroToCarrito({ variables: { input: { libro: libro, lugar: e.target.lugar.value,fecha_reserva: fecha_reserva.format(), fecha_estimada: fecha_estimada.format(), carrito: carrito} } });
+
+        //agregar condicional (no funciona)
+        console.log(this.props.error);
+        if(!this.props.error){
+            this.setState({ open: true });
+        }
+        
     }
 
     alert(e) {
@@ -146,13 +202,13 @@ class LibroTableRow extends React.Component {
 
                 </div>
                 <hr></hr>
-                <form>
+                <form onSubmit={this.onFormSubmit}>
                     <div className="mb-3 row">
                         <label  style={{fontSize: "16px"}} for="inputLugar" className="col-md-5 col-form-label">Seleccione si desea el libro a domicilio o en sala</label>
                         <div className="col-sm-3 col-md-4">
-                            <select className="form-select" aria-label="Default select example">
-                                <option selected value="domicilio">Domicilio</option>
-                                <option value="sala">Sala</option>
+                            <select onChange = {this.handleSelectChange} name="lugar" className="form-select" aria-label="Default select example">
+                                <option selected value="Casa">Domicilio</option>
+                                <option value="Sala">Sala</option>
                             </select>
                         </div>
                     </div>
@@ -174,8 +230,8 @@ class LibroTableRow extends React.Component {
     
 
                     <div className="d-grid d-md-flex justify-content-end align-items-center pe-5">
-                        <p style={{fontSize: "13px"}} className="align-items-center pe-2">Su libro tendrá fecha de devolución máxima hasta el (fecha a calcular)</p>
-                        <button onClick={this.handleClick} type="button" className="btn btn-sm btn-primary mb-3 shadow">Agregar</button>
+                        <p style={{fontSize: "13px"}} className="align-items-center pe-2">Su libro tendrá fecha de devolución máxima hasta el {this.state.fecha_estimada}</p>
+                        <button type="submit" className="btn btn-sm btn-primary mb-3 shadow">Agregar</button>
                         <Snackbar
                             anchorOrigin={{
                                 vertical: "bottom",
@@ -207,17 +263,25 @@ class LibroTableRow extends React.Component {
   }
 
 export default function Catalogo(props){
+    const [cookies, setCookie] = useCookies(["user"]);
+    const [cookies_biblio, setCookieBiblio] = useCookies(["biblio"]);
+
+    const { loading: loading_user, error: error_user, data: data_user } = useQuery(GET_USUARIO, {
+    variables: { getUsuarioId: cookies.user},
+    });
+
+    console.log(data_user);
     const { loading: loading_zero, error: error_zero, data: data_zero } = useQuery(GET_CATALOGO, {
         variables: { titulo: "", autor: "", categoria: "" },
       });
-    
+
     const [obtenerCatalogo, { loading, error, data }] = useLazyQuery(GET_CATALOGO, {
         onCompleted: someData => {
             console.log(someData);
         }
     });
 
-    return <CatalogoComponent getCatalogo={obtenerCatalogo} loading = {loading} loading_zero = {loading_zero} data_zero={data_zero} data={data}></CatalogoComponent>
+    return <CatalogoComponent getCatalogo={obtenerCatalogo} loading = {loading} data_user = {data_user} loading_zero = {loading_zero} data_zero={data_zero} data={data}></CatalogoComponent>
 }
 class CatalogoComponent extends Component {
     componentDidMount() {
@@ -238,6 +302,7 @@ class CatalogoComponent extends Component {
         this.props.getCatalogo({variables: {titulo: titulo, autor: autor, categoria: categoria}});
     }
     render() {
+    
         return (
             <div>
                 <header>
@@ -323,7 +388,7 @@ class CatalogoComponent extends Component {
                                 <th scope="col">En sala</th>
                                 </tr>
                             </thead>
-                            <tbody> {this.props.data_zero.getLibrosCatalogo.map((libro, index) => <LibroTableRow key={index} index={index + 1} libro={libro}/>)}
+                            <tbody> {this.props.data_zero.getLibrosCatalogo.map((libro, index) => <LibroTableRow data_user = {this.props.data_user} key={index} index={index + 1} libro={libro}/>)}
                             </tbody>
                             </table> : <p class="text-center">Ha ocurrido un error. Inténtelo nuevamente.</p>}
                 

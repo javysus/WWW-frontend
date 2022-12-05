@@ -63,9 +63,9 @@ export class NavBar extends React.Component {
 
     childToParentClose = () => {
         this.setState({
-            email: '',
-            password: ''
-        })
+            user: '',
+            biblio: ''
+        }, () => {this.props.cookies.remove("user"); this.props.cookies.remove("biblio")})
     }
 
     closeModal = () => {
@@ -116,9 +116,10 @@ export class NavBar extends React.Component {
                             </DropdownToggle>
 
                             <Dropdown.Menu>
-                                <Link to="/mis-solicitudes"><Dropdown.Item href="#/action-1">Mis solicitudes</Dropdown.Item></Link>
-                                <Link to="/mis-prestamos"><Dropdown.Item href="#/action-2">Mis préstamos</Dropdown.Item></Link>
-                                <Link to="/configuracion"><Dropdown.Item href="#/action-3">Configuración</Dropdown.Item></Link>
+                                <Link to="/mis-solicitudes"><Dropdown.Item >Mis solicitudes</Dropdown.Item></Link>
+                                <Link to="/mis-prestamos"><Dropdown.Item >Mis préstamos</Dropdown.Item></Link>
+                                <Link to="/configuracion"><Dropdown.Item >Configuración</Dropdown.Item></Link>
+                                <Link to="/"><Dropdown.Item>Crear Ficha</Dropdown.Item></Link>
                                 <hr style={{margin: "5px"}}></hr>
                                 <Dropdown.Item href="#cerrar-sesion" data-bs-target="#cerrar-sesion" data-bs-toggle='modal'>Cerrar sesión</Dropdown.Item>
                             </Dropdown.Menu>

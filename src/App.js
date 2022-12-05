@@ -21,7 +21,28 @@ import PrestamosCreados from './components/PrestamosCreados';
 import AgregarPrestamo from './components/AgregarPrestamo';
 import Configuracion from './components/Configuracion';
 import Comprobante from './components/Comprobante';
+import moment from 'moment';
+import { useCookies } from "react-cookie";
+export const GET_USUARIO = gql`query GetUsuario($getUsuarioId: ID!) {
+  getUsuario(id: $getUsuarioId) {
+    nombre
+    rut
+    carrito {
+      id
+    }
+  }
+}`;
 
+export function GetUsuario(){
+  const [cookies, setCookie] = useCookies(["user"]);
+  const [cookies_biblio, setCookieBiblio] = useCookies(["biblio"]);
+
+  const { loading: loading_user, error: error_user, data: data_user } = useQuery(GET_USUARIO, {
+    variables: { getUsuarioId: cookies.user},
+  });
+
+  return {loading_user, error_user, data_user}
+}
 class App extends React.Component {
   render() {
     return(

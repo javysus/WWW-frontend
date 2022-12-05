@@ -5,8 +5,73 @@ import 'aos/dist/aos.css';
 import carrito from '../mocking/carrito'
 import { Snackbar } from '@mui/material';
 import MuiAlert from "@mui/material/Alert";
+import { useCookies } from "react-cookie";
+import {useLazyQuery, useQuery, useMutation, gql} from '@apollo/client';
+import { GET_USUARIO } from '../App';
+import { GetUsuario } from '../App';
 
-class Carrito extends React.Component{
+const GET_CARRITO = gql`query GetCarrito($usuario: String) {
+  getCarrito(usuario: $usuario) {
+    id
+    solicitudes {
+      libro {
+        autor
+        tipo
+      }
+      lugar
+      fecha_reserva
+      fecha_estimada
+    }
+  }
+}`;
+function LibroCarrito(props){
+  var libro = props.libro;
+  return (
+  <tr key={props.index}>
+  <th scope="row">
+    <div className="d-flex align-items-center">
+      <div className="flex-column ms-4">
+        <p className="mb-2">{libro.titulo}</p>
+        <p className="mb-0">{libro.autor}</p>
+      </div>
+    </div>
+  </th>
+  <td className="align-middle">
+    <p className="mb-0" style={{fontWeight: "500;"}}>{libro.tipo}</p>
+  </td>
+  <td className="align-middle">
+    <p className="mb-0" style={{fontWeight: "500;"}}>{libro.lugar}</p>
+  </td>
+  <td className="align-middle">
+    <p className="mb-0" style={{fontWeight: "500;"}}>{libro.fecha_devolucion}</p>
+  </td>
+  <td className="align-middle">
+      <button type="button" style={{background: "var(--bs-danger)"}} className="border-0 bs-icon-md bs-icon-circle shadow d-flex justify-content-center align-items-center me-2 bs-icon btn-block btn-md"><svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="white" class="bi bi-trash" viewBox="0 0 16 16">
+          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+          <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+          </svg>
+      </button>
+  </td>
+</tr>)
+}
+
+function Carrito(){
+  const [cookies, setCookie] = useCookies(["user"]);
+  const [cookies_biblio, setCookieBiblio] = useCookies(["biblio"]);
+  console.log(cookies.user);
+  var {loading, error, data} = useQuery(GET_CARRITO, {
+    variables: { usuario: cookies.user},
+    });
+
+
+  console.log(data);
+  
+  var {loading_user, error_user, data_user} = GetUsuario();
+
+  return <CarritoComponent data={data} data_user={data_user}></CarritoComponent>
+
+}
+class CarritoComponent extends React.Component{
   componentDidMount() {
     AOS.init();
   }
@@ -33,6 +98,7 @@ class Carrito extends React.Component{
 
     render(){
         const { open } = this.state;
+        var carrito = this.props.data;
         return(
             <>
               <div>
@@ -64,32 +130,7 @@ class Carrito extends React.Component{
                           </thead>
                           <tbody>
                             {carrito.data.getCarrito.map((libro, index) =>
-                              <tr key={index}>
-                                <th scope="row">
-                                  <div className="d-flex align-items-center">
-                                    <div className="flex-column ms-4">
-                                      <p className="mb-2">{libro.titulo}</p>
-                                      <p className="mb-0">{libro.autor}</p>
-                                    </div>
-                                  </div>
-                                </th>
-                                <td className="align-middle">
-                                  <p className="mb-0" style={{fontWeight: "500;"}}>{libro.tipo}</p>
-                                </td>
-                                <td className="align-middle">
-                                  <p className="mb-0" style={{fontWeight: "500;"}}>{libro.lugar}</p>
-                                </td>
-                                <td className="align-middle">
-                                  <p className="mb-0" style={{fontWeight: "500;"}}>{libro.fecha_devolucion}</p>
-                                </td>
-                                <td className="align-middle">
-                                    <button type="button" style={{background: "var(--bs-danger)"}} className="border-0 bs-icon-md bs-icon-circle shadow d-flex justify-content-center align-items-center me-2 bs-icon btn-block btn-md"><svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="white" class="bi bi-trash" viewBox="0 0 16 16">
-                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                                        <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                                        </svg>
-                                    </button>
-                                </td>
-                              </tr>
+                              <LibroCarrito index={index} libro={libro}></LibroCarrito>
                               )
                             }
                           </tbody>
