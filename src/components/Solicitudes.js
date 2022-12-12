@@ -6,7 +6,51 @@ import { Snackbar } from '@mui/material';
 import MuiAlert from "@mui/material/Alert";
 import solicitudes_pendientes from '../mocking/solicitudes_pendientes';
 import moment from 'moment';
-class Solicitudes extends React.Component{
+import { useCookies } from "react-cookie";
+import {useLazyQuery, useQuery, useMutation, gql} from '@apollo/client';
+
+const GET_SOLICITUDES = gql`query GetSolicitudEstado($estadoSolicitud: Boolean) {
+  getSolicitudEstado(estado_solicitud: $estadoSolicitud) {
+    id
+    libro {
+      autor
+      titulo
+      tipo
+      ejemplares {
+        id
+        ubicacion
+      }
+    }
+    lugar
+    fecha_reserva
+  }
+}`;
+
+const UPDATE_SOLICITUD = gql`mutation UpdateSolicitud($updateSolicitudId: ID!, $input: SolicitudActualizar) {
+  updateSolicitud(id: $updateSolicitudId, input: $input) {
+    id
+  }
+}`
+function Solicitudes(){
+  const [cookies, setCookie] = useCookies(["biblio"]);
+    //const [cookies_biblio, setCookieBiblio] = useCookies(["biblio"]);
+
+    const { loading, error, data} = useQuery(GET_SOLICITUDES, {
+        variables: { estadoSolicitud: false },
+    });
+
+    const [updateSolicitud, { data: data_up, loading: loading_up, error: error_up}] = useMutation(UPDATE_SOLICITUD);
+    
+    if(data){
+      var ubicacion = Array(data.getSolicitudEstado.length).fill({ubicacion: "Seleccione ejemplar", ejemplar: null});
+      
+      console.log(ubicacion);
+    }
+    console.log(data);
+
+  return <SolicitudesComponent updateSolicitud={updateSolicitud} data_up={data_up} loading_up={loading_up} error_up={error_up} ubicacion={ubicacion} biblio={cookies.biblio} data={data} loading={loading} error={error}></SolicitudesComponent>
+}
+class SolicitudesComponent extends React.Component{
     componentDidMount() {
         AOS.init();
     }
@@ -18,32 +62,55 @@ class Solicitudes extends React.Component{
         collapseMenu: true,
         open: false,
         isChanged: false,
-        ubicacion: Array(solicitudes_pendientes.data.getSolicitudEstado.length).fill({ubicacion: "Seleccione ejemplar"})
+        ubicacion: this.props.ubicacion,
+        items_selected: []
       };
   
       this.handleClick = this.handleClick.bind(this);
       this.handleClose = this.handleClose.bind(this);
       this.handleChange = this.handleChange.bind(this);
       this.calcularFecha = this.calcularFecha.bind(this);
-    }
+      
+    }h
 
       calcularFecha = (fecha) => {
           return moment(fecha).format('MMM DD YYYY, h:mm:ss a');
       } 
-
+      
     handleChange = (index) => (e) => {
       const index_ejemplar = e.target.value;
       console.log(index_ejemplar);
+      console.log(index);
       const list = this.state.ubicacion;
       if(index_ejemplar===""){
         list[index] = {ubicacion: "Seleccione ejemplar"};
       }
       else{
-        list[index] = {ubicacion: solicitudes_pendientes.data.getSolicitudEstado[index].libro.ejemplares[index_ejemplar].ubicacion};
+        list[index] = {ubicacion: this.props.data.getSolicitudEstado[index].libro.ejemplares[index_ejemplar].ubicacion, ejemplar: this.props.data.getSolicitudEstado[index].libro.ejemplares[index_ejemplar]};
       }
       this.setState({
         ubicacion: list
       })
+    }
+
+    handleAddItem = (e, solicitud, index) => {
+      let items_selected = [...this.state.items_selected];
+      var ids = items_selected.map(solicitud => solicitud.id);
+
+      console.log(index);
+      if(e.target.checked){
+        items_selected.push(solicitud);
+        
+      }
+      else{
+        var index2 = ids.indexOf(solicitud.id);
+        items_selected.splice(index2,1);
+      }
+
+      console.log(items_selected);
+
+      this.setState({items_selected})
+      
     }
     handleOpen = () => this.setState({ open: true });
 
@@ -51,8 +118,48 @@ class Solicitudes extends React.Component{
 
     handleClick = () => this.setState({ open: true });
 
+    gestionarSolicitudes = (e) => {
+      var error =false;
+      for (var solicitud in this.state.items_selected){
+        var indexOf = this.props.data.getSolicitudEstado.indexOf(this.state.items_selected[solicitud]);
+        console.log(indexOf);
+        var ejemplar = this.state.ubicacion[indexOf].ejemplar.id;
+        if (ejemplar === null){
+          error = true;
+          console.log("error uwu");
+        }
+        
+        else{
+          //console.log(this.state.items_selected[solicitud].id);
+          //console.log(this.props.biblio);
+          //console.log(ejemplar);
+          this.props.updateSolicitud({variables: {
+            updateSolicitudId: this.state.items_selected[solicitud].id,
+            input: {
+              bibliotecario: this.props.biblio,
+              ejemplar: ejemplar,
+              estado_solicitud: true,
+            }
+          }})
+
+          if (this.props.error_up){
+            error = true;
+            console.log("error uwu");
+          }
+        }
+
+        if(!error){
+          this.setState({ open: true });
+        }
+      }
+    }
     render() {
         const { open } = this.state;
+        let biblio = this.props.biblio;
+        let data = this.props.data;
+        let loading = this.props.loading;
+        let error = this.props.error;
+
         return(
             <>
                 <header>
@@ -63,13 +170,16 @@ class Solicitudes extends React.Component{
                             <path fillRule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
                             </svg>Volver</button></Link>
                           </div>
+
+                          {biblio ? 
                             <div className="m-4 m-lg-5 text-center">
                                 <h1 className="display-5 fw-bold">Solicitudes</h1>
-                            </div>
+                            </div> : <p class="text-center"> No tiene acceso a esta página</p>}
                         </div>
                     </div>
                 </header>
                 
+                { biblio ?
                 <section className="h-100 h-custom">
                 <div className="container h-100 py-5">
                   <div className="row d-flex justify-content-left align-items-center h-100">
@@ -81,6 +191,7 @@ class Solicitudes extends React.Component{
                             </span><h6 style={{paddingTop: "8px"}} className="fw-bold">Seleccione las solicitudes que quiere gestionar</h6>
                         </div>
                       <div className="table-responsive">
+                      {loading ? <p class="text-center">Cargando...</p> : error ? <p class="text-center">Ha ocurrido un error. Inténtelo nuevamente</p> : data.getSolicitudEstado===null ? <p class="text-center">No hay solicitudes</p> : 
                         <table className="table table-hover">
                           <thead>
                             <tr>
@@ -94,13 +205,13 @@ class Solicitudes extends React.Component{
                           </thead>
                           <tbody>
                             
-                            {solicitudes_pendientes.data.getSolicitudEstado.map((solicitud, index0) =>
+                            {data.getSolicitudEstado.map((solicitud, index0) =>
                                 <tr key={index0}>
                                 <th scope="row">
                                   <div className="d-flex align-items-center">
                                       <td className="align-middle">
                                           <div class="form-check-md">
-                                              <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"/>
+                                              <input class="form-check-input" onChange={(e) => this.handleAddItem(e, solicitud, index0)} type="checkbox" value={solicitud.id} id="flexCheckDefault"/>
                                           </div>
                                       </td>
                                     <div className="flex-column ms-4">
@@ -128,19 +239,19 @@ class Solicitudes extends React.Component{
                                       </select>
                                   </div>
                                 </td>
-                                <td className="align-middle">
+                                {this.state.ubicacion ? <td className="align-middle">
                                   <p className="mb-0" style={{fontWeight: "500"}}>{this.state.ubicacion[index0].ubicacion}</p>
-                                </td>
+                                </td> : <td><p>Cargando...</p></td>}
                               </tr>
                               )}
                           </tbody>
-                        </table>
+                        </table>}
                       </div>
 
                       <div className="card-body p-4">
                           <div className="row justify-content-end">
                               <div className="col-lg-4 col-xl-2">
-                              <button onClick = {this.handleClick} type="button" className="btn btn-primary btn-block btn-md shadow">
+                              <button onClick = {this.gestionarSolicitudes} type="button" className="btn btn-primary btn-block btn-md shadow">
                                   <div className="d-flex justify-content-between">
                                   <span>Confirmar</span>
                                   </div>
@@ -171,7 +282,7 @@ class Solicitudes extends React.Component{
                     </div>
                   </div>
                 </div>
-              </section>
+              </section> : <div></div>}
             </>
         )
     }

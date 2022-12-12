@@ -21,6 +21,8 @@ import PrestamosCreados from './components/PrestamosCreados';
 import AgregarPrestamo from './components/AgregarPrestamo';
 import Configuracion from './components/Configuracion';
 import Comprobante from './components/Comprobante';
+import CrearFicha from './components/CrearFicha';
+import Activacion from './components/Activacion';
 import moment from 'moment';
 import { useCookies } from "react-cookie";
 export const GET_USUARIO = gql`query GetUsuario($getUsuarioId: ID!) {
@@ -66,7 +68,9 @@ class App extends React.Component {
           <Route path="/prestamos-creados" element={<PrestamosCreados/>}></Route>
           <Route path="/generar-prestamo" element={<AgregarPrestamo/>}></Route>
           <Route path="/configuracion" element={<Configuracion/>}></Route>
-          <Route path="/comprobante" element={<Comprobante/>}></Route>
+          <Route path="/comprobante/:id" element={<Comprobante/>}></Route>
+          <Route path="/crear-ficha" element={<CrearFicha/>}></Route>
+          <Route path="/activacion/:id" element={<Activacion/>}></Route>
         </Routes>
       </BrowserRouter>
     );

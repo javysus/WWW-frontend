@@ -7,12 +7,29 @@ import DropdownToggle from 'react-bootstrap/esm/DropdownToggle';
 import CerrarSesion from './CerrarSesion';
 import {useQuery, gql} from '@apollo/client';
 import { withCookies, Cookies } from "react-cookie";
+import { useCookies } from "react-cookie";
 
 const VALIDACION_USUARIO = gql`query Query($correo: String, $constrasenia: String) {
     ValidacionUsuario(correo: $correo, constrasenia: $constrasenia)
   }`;
 
-export class NavBar extends React.Component {
+const GET_USUARIO = gql`query Query($getUsuarioId: ID!) {
+    getUsuario(id: $getUsuarioId) {
+      foto
+    }
+  }`
+function NavBar(){
+    const [cookies, setCookie, removeCookie] = useCookies(["user"]);
+    const [cookies_biblio, setCookieBiblio, removeCookieBiblio] = useCookies(["biblio"]);
+
+    const { loading, error, data} = useQuery(GET_USUARIO, {
+        variables: { getUsuarioId: cookies.user},
+    });
+
+    return <NavBarComponent removeCookie={removeCookie} setCookie={setCookie} setCookieBiblio={setCookieBiblio} removeCookieBiblio={removeCookieBiblio} data={data} cookies={cookies} cookiesBiblio={cookies_biblio}></NavBarComponent>
+}
+
+class NavBarComponent extends React.Component {
     
     constructor(props){
         super(props);
@@ -24,8 +41,8 @@ export class NavBar extends React.Component {
             bibliotecario: false,
             validacion: false,
             showModal: false,
-            user: this.props.cookies.get("user") || "",
-            biblio: this.props.cookies.get("biblio") || "",
+            user: /*this.props.cookies.get("user")*/ this.props.cookies.user || "",
+            biblio: /*this.props.cookies.get("biblio")*/ this.props.cookiesBiblio.biblio|| "",
         };
 
         this.childToParent = this.childToParent.bind(this);
@@ -44,13 +61,18 @@ export class NavBar extends React.Component {
             /*document.getElementById("modal-1").classList.remove("show", "d-block");
             document.querySelectorAll(".modal-backdrop")
             .forEach(el => el.classList.remove("modal-backdrop"));*/
-            cookies.set("user", data.id, { path: "/" }); // setting the cookie
-            this.setState({ user: cookies.get("user") });
+            //cookies.set("user", data.id, { path: "/" }); // setting the cookie
+            //this.setState({ user: cookies.get("user") });
+            this.props.setCookie("user", data.id, { path: "/" });
+            this.setState({ user: this.props.cookies.user })
             this.closeModal()
         } 
         else if(data.bibliotecario && data.validacion){
-            cookies.set("biblio", data.id, { path: "/" }); // setting the cookie
-            this.setState({ user: cookies.get("biblio") });
+            //cookies.set("biblio", data.id, { path: "/" }); // setting the cookie
+            //this.setState({ user: cookies.get("biblio") });
+            
+            this.props.setCookieBiblio("biblio", data.id, { path: "/" });
+            this.setState({ biblio: this.props.cookiesBiblio.biblio })
             this.closeModal()
         }
         this.setState({
@@ -65,7 +87,9 @@ export class NavBar extends React.Component {
         this.setState({
             user: '',
             biblio: ''
-        }, () => {this.props.cookies.remove("user"); this.props.cookies.remove("biblio")})
+        }, () => {/*this.props.cookies.remove("user"); this.props.cookies.remove("biblio")*/
+                    
+                    this.props.removeCookie("user"); this.props.removeCookieBiblio("biblio");})
     }
 
     closeModal = () => {
@@ -80,6 +104,7 @@ export class NavBar extends React.Component {
     render() {
     var user_id = this.state.user;
     var biblio_id = this.state.biblio;
+    var data = this.props.data;
     if (user_id !== ""){
         return(
             <>
@@ -112,14 +137,13 @@ export class NavBar extends React.Component {
                             </div>
                             <Dropdown>
                             <DropdownToggle className="border-0 bg-transparent px-3">
-                                <img  style={{width:"50px"}}className="rounded-circle shadow-4-strong" alt="avatar2" src="https://i.pinimg.com/originals/30/8d/79/308d795c3cac0f8f16610f53df4e1005.jpg"/>
+                                <img  style={{width:"50px"}} className="rounded-circle shadow-4-strong" alt="avatar2" src={(data && data.getUsuario.foto !== null) ?  require("../images/profe.jpg") : require("../images/avatar.png")}/>
                             </DropdownToggle>
 
                             <Dropdown.Menu>
-                                <Link to="/mis-solicitudes"><Dropdown.Item >Mis solicitudes</Dropdown.Item></Link>
-                                <Link to="/mis-prestamos"><Dropdown.Item >Mis préstamos</Dropdown.Item></Link>
-                                <Link to="/configuracion"><Dropdown.Item >Configuración</Dropdown.Item></Link>
-                                <Link to="/"><Dropdown.Item>Crear Ficha</Dropdown.Item></Link>
+                                <Dropdown.Item href="/mis-solicitudes">Mis solicitudes</Dropdown.Item>
+                                <Dropdown.Item href="/mis-prestamos">Mis préstamos</Dropdown.Item>
+                                <Dropdown.Item href="/configuracion">Configuración</Dropdown.Item>
                                 <hr style={{margin: "5px"}}></hr>
                                 <Dropdown.Item href="#cerrar-sesion" data-bs-target="#cerrar-sesion" data-bs-toggle='modal'>Cerrar sesión</Dropdown.Item>
                             </Dropdown.Menu>
@@ -154,6 +178,7 @@ export class NavBar extends React.Component {
                                 <li className="nav-item"><Link className="nav-link active" to="/catalogo">Catálogo</Link></li>
                                 <li className="nav-item"><Link className="nav-link active" to="/solicitudes">Solicitudes</Link></li>
                                 <li className="nav-item"><Link className="nav-link active" to="/prestamos">Préstamos</Link></li>
+                                <li className="nav-item"><Link className="nav-link active" to="/crear-ficha">Crear ficha</Link></li>
                             </ul>
                             <Dropdown>
                             <DropdownToggle className="border-0 bg-transparent px-3">

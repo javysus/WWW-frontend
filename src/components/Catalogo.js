@@ -127,7 +127,7 @@ class LibroTableRowComponent extends React.Component {
         console.log(this.state.startDate)
         var carrito = this.props.data_user.getUsuario.carrito.id;
         console.log(carrito);
-        var fecha_reserva =  moment(e.target.startDate.value, "MM/dd/yyyy HH:mm:ss");
+        var fecha_reserva =  moment(e.target.startDate.value, "MM/DD/YYYY HH:mm:ss");
         var fecha_estimada = moment(this.state.fecha_estimada, "D MMM YYYY, HH:mm");
         console.log(fecha_reserva.format())
         console.log(fecha_estimada.format())
